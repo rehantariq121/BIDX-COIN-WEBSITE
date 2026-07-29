@@ -1,10 +1,11 @@
 node_modules/
 dist/
-.env
-.env.local
-.DS_Store
 *.log
+.DS_Store
 output/
+
+# Local env and tooling state
+.env*
 .vercel/
 
 # Pre-optimisation masters. scripts/optimize-media.sh reads from here and writes
