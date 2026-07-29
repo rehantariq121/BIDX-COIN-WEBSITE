@@ -9,7 +9,7 @@ export function HeroFilm() {
       <div className="film-hero-media" aria-hidden="true">
         <img
           className="film-hero-poster"
-          src="/posters/chapter-01.png"
+          src="/posters/chapter-01.webp"
           alt=""
           fetchPriority="high"
         />
@@ -17,7 +17,7 @@ export function HeroFilm() {
           <video
             className="film-hero-video"
             src="/videos/chapter-01-reveal.mp4"
-            poster="/posters/chapter-01.png"
+            poster="/posters/chapter-01.webp"
             preload="auto"
             autoPlay
             muted

@@ -16,6 +16,8 @@ export type WorldChapter = {
   body: string;
   video: string;
   poster: string;
+  /** Fraction of this chapter's band spent dissolving into the next (0.05–0.6). Raise it to hide a mismatched seam. */
+  fadeLead?: number;
   primary?: {
     label: string;
     href: string;
@@ -48,7 +50,12 @@ export function CinematicWorld({
   const targetTimes = useRef<number[]>(chapters.map(() => 0));
   const smoothTimes = useRef<number[]>(chapters.map(() => 0));
   const durations = useRef<number[]>(chapters.map(() => 1));
+  const requested = useRef(new Set<number>());
+  const createdUrls = useRef<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [blobUrls, setBlobUrls] = useState<(string | null)[]>(() =>
+    chapters.map(() => null),
+  );
   const activeIndexRef = useRef(0);
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -67,19 +74,21 @@ export function CinematicWorld({
       const position = clamp(progress) * total;
       const current = Math.min(total - 1, Math.floor(position));
       const local = current === total - 1 ? clamp(position - current) : position - current;
-      const fadeStart = 0.84;
+      // How much of the outgoing chapter's band is spent dissolving into the next.
+      // A wider lead + easing hides seams where the two clips don't line up exactly.
+      const lead = clamp(chapters[current]?.fadeLead ?? 0.24, 0.05, 0.6);
+      const fadeStart = 1 - lead;
+      const raw = local > fadeStart ? (local - fadeStart) / (1 - fadeStart) : 0;
+      const blend = raw * raw * (3 - 2 * raw); // smoothstep
 
       chapters.forEach((_, index) => {
         targetTimes.current[index] = clamp(position - index);
         let opacity = 0;
 
         if (index === current) {
-          opacity =
-            current < total - 1 && local > fadeStart
-              ? 1 - (local - fadeStart) / (1 - fadeStart)
-              : 1;
+          opacity = current < total - 1 ? 1 - blend : 1;
         } else if (index === current + 1) {
-          opacity = local > fadeStart ? (local - fadeStart) / (1 - fadeStart) : 0;
+          opacity = blend;
         }
 
         const media = mediaRefs.current[index];
@@ -135,6 +144,52 @@ export function CinematicWorld({
     return () => cancelAnimationFrame(frame);
   }, [reduceMotion]);
 
+  // Serving a blob keeps scrubbing smooth, but fetching every clip on mount costs
+  // the whole reel before the first scroll. Fetch the active chapter plus the next
+  // one, widening as the visitor advances.
+  useEffect(() => {
+    if (reduceMotion) return;
+
+    let cancelled = false;
+
+    const load = async (index: number) => {
+      if (index >= chapters.length || requested.current.has(index)) return;
+      requested.current.add(index);
+      try {
+        const response = await fetch(chapters[index].video);
+        const blob = await response.blob();
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        createdUrls.current.push(url);
+        setBlobUrls((prev) => {
+          const next = [...prev];
+          next[index] = url;
+          return next;
+        });
+      } catch {
+        // Leave the poster in place and allow a later pass to retry; the raw src
+        // is used as a fallback below.
+        requested.current.delete(index);
+      }
+    };
+
+    void load(activeIndex);
+    void load(activeIndex + 1);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeIndex, chapters, reduceMotion]);
+
+  // Revoking happens only on unmount — the effect above reruns on every chapter
+  // change, and those URLs are still in use.
+  useEffect(
+    () => () => {
+      createdUrls.current.forEach((url) => URL.revokeObjectURL(url));
+    },
+    [],
+  );
+
   const primeVideos = () => {
     videoRefs.current.forEach((video) => {
       if (!video) return;
@@ -185,16 +240,23 @@ export function CinematicWorld({
                 mediaRefs.current[index] = node;
               }}
             >
-              <img src={item.poster} alt="" className="world-poster" />
+              <img
+                src={item.poster}
+                alt=""
+                className="world-poster"
+                loading={index === 0 ? "eager" : "lazy"}
+              />
               {!reduceMotion && (
                 <video
                   ref={(node) => {
                     videoRefs.current[index] = node;
                   }}
                   className="world-video"
-                  src={item.video}
+                  src={blobUrls[index] ?? item.video}
                   poster={item.poster}
-                  preload={index < 2 ? "auto" : "metadata"}
+                  // Metadata only: the blob fetched above is what actually gets
+                  // scrubbed, so preloading the raw src would download it twice.
+                  preload="metadata"
                   muted
                   playsInline
                   tabIndex={-1}

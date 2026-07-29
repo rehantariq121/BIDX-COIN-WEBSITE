@@ -5,3 +5,8 @@ dist/
 .DS_Store
 *.log
 output/
+.vercel/
+
+# Pre-optimisation masters. scripts/optimize-media.sh reads from here and writes
+# the web-sized assets into public/; these originals are too large to ship.
+media-source/

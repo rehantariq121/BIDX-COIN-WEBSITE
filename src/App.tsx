@@ -21,6 +21,7 @@ import {
 } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { CinematicWorld, type WorldChapter } from "./components/CinematicWorld";
+import { EcoLedger } from "./components/EcoLedger";
 import { HeroFilm } from "./components/HeroFilm";
 
 const impactChapters: WorldChapter[] = [
@@ -30,7 +31,7 @@ const impactChapters: WorldChapter[] = [
     title: "The signal finds the soil.",
     body: "Token activity moves toward a restricted path for approved planting campaigns.",
     video: "/videos/journey-02-03.mp4",
-    poster: "/posters/journey-02-03.png",
+    poster: "/posters/journey-02-03.webp",
   },
   {
     id: "roots",
@@ -38,7 +39,7 @@ const impactChapters: WorldChapter[] = [
     title: "A contribution takes root.",
     body: "The first visible outcome begins with one connected planting record.",
     video: "/videos/journey-03-04.mp4",
-    poster: "/posters/journey-03-04.png",
+    poster: "/posters/journey-03-04.webp",
   },
   {
     id: "planting",
@@ -46,7 +47,11 @@ const impactChapters: WorldChapter[] = [
     title: "One plant becomes a system.",
     body: "Verified campaigns can expand one eligible contribution into connected field activity.",
     video: "/videos/journey-04-05.mp4",
-    poster: "/posters/journey-04-05.png",
+    poster: "/posters/journey-04-05.webp",
+    // Planting's last frame and Scaling's first frame don't line up (coin shifts).
+    // A big foreground coin ghosts if crossfaded slowly, so keep this seam a short,
+    // eased dissolve — the two coins overlap only briefly instead of a long double-image.
+    fadeLead: 0.12,
   },
   {
     id: "scale",
@@ -54,7 +59,7 @@ const impactChapters: WorldChapter[] = [
     title: "A connected landscape grows.",
     body: "Planting activity scales outward while each campaign keeps its own evidence trail.",
     video: "/videos/journey-05-06.mp4",
-    poster: "/posters/journey-05-06.png",
+    poster: "/posters/journey-05-06.webp",
   },
   {
     id: "evidence",
@@ -62,7 +67,7 @@ const impactChapters: WorldChapter[] = [
     title: "The network stays visible.",
     body: "Locations, field records and survival checks are designed to remain connected.",
     video: "/videos/journey-06-07.mp4",
-    poster: "/posters/journey-06-07.png",
+    poster: "/posters/journey-06-07.webp",
   },
   {
     id: "proof",
@@ -71,7 +76,7 @@ const impactChapters: WorldChapter[] = [
     title: "Proof, not promises.",
     body: "A public trail can connect each eligible transaction to a measured environmental outcome.",
     video: "/videos/journey-07-08.mp4",
-    poster: "/posters/journey-07-08.png",
+    poster: "/posters/journey-07-08.webp",
     primary: {
       label: "See the framework",
       href: "#proof-framework",
@@ -183,7 +188,7 @@ function Header() {
     >
       <a className="brand" href="#top" aria-label="BIDX home">
         <span className="brand-mark">
-          <Plant aria-hidden="true" weight="fill" />
+          <img src="/logo/bidx_coin_logo.webp" alt="BIDX Coin Logo" className="brand-mark-img" />
         </span>
         <span>BIDX</span>
       </a>
@@ -248,8 +253,9 @@ export function App() {
             <div className="model-layout">
               <Reveal className="model-visual glass-panel">
                 <img
-                  src="/posters/chapter-02.png"
+                  src="/posters/chapter-02.webp"
                   alt="BIDX coin sending green energy into a network of roots below the soil"
+                  loading="lazy"
                 />
                 <div className="model-visual-copy">
                   <Leaf aria-hidden="true" weight="fill" />
@@ -323,6 +329,8 @@ export function App() {
             </div>
           </div>
         </section>
+
+        <EcoLedger id="eco-ledger" />
 
         <section className="content-section allocation-section">
           <div className="section-shell">
@@ -485,10 +493,12 @@ export function App() {
         </section>
 
         <section className="finale-section">
-          <img src="/posters/chapter-04.png" alt="" aria-hidden="true" />
+          <img src="/posters/chapter-04.webp" alt="" aria-hidden="true" loading="lazy" />
           <div className="finale-overlay" />
           <Reveal className="finale-card glass-panel">
-            <Plant aria-hidden="true" weight="fill" />
+            <span className="brand-mark finale-mark">
+              <img src="/logo/bidx_coin_logo.webp" alt="BIDX Coin Logo" className="brand-mark-img" />
+            </span>
             <h2>Build the proof before the promise.</h2>
             <p>Explore the complete commercial, environmental and governance plan for BIDX.</p>
             <a
@@ -508,7 +518,7 @@ export function App() {
         <div className="section-shell footer-layout">
           <div className="brand footer-brand">
             <span className="brand-mark">
-              <Plant aria-hidden="true" weight="fill" />
+              <img src="/logo/bidx_coin_logo.webp" alt="BIDX Coin Logo" className="brand-mark-img" />
             </span>
             <span>BIDX</span>
           </div>
