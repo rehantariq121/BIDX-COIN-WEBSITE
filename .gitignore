@@ -11,3 +11,8 @@ output/
 # Pre-optimisation masters. scripts/optimize-media.sh reads from here and writes
 # the web-sized assets into public/; these originals are too large to ship.
 media-source/
+
+# Local agent/editor tooling state — not part of the project
+.claude/
+.codebase-memory/
+.codex-runtime/
