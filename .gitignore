@@ -16,3 +16,8 @@ media-source/
 .claude/
 .codebase-memory/
 .codex-runtime/
+
+# TypeScript incremental caches and compiled config output
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
